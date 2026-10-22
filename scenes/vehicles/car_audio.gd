@@ -1,5 +1,5 @@
 extends Node3D
-## Sons do carro. Precisa ser filho de um VehicleBody3D.
+## Sons do carro. Precisa ser filho de um Vehicle (vehicle.gd).
 ## - Motor: loop com pitch pelo RPM de um câmbio simulado.
 ## - Pneus: chiado quando as rodas perdem aderência no asfalto.
 ## - Terra: ronco de cascalho rodando em superfície com meta "surface" = "dirt".
@@ -12,16 +12,15 @@ const GRAVEL_SOUND := preload("res://assets/audio/car/gravel_loop.wav")
 const IMPACT_SOUND := preload("res://assets/audio/car/impact.wav")
 const SILENT_DB := -60.0
 
-## Força máxima do motor do carro, para estimar o acelerador.
-@export var max_engine_force := 300.0
 @export var idle_pitch := 0.8
 @export var max_pitch := 3.2
-## Velocidade máxima (m/s) de cada marcha do câmbio simulado.
-@export var gear_top_speeds := PackedFloat32Array([9.0, 17.0, 26.0, 36.0, 50.0])
+## Limite de cada marcha do câmbio simulado, como fração da velocidade máxima
+## do veículo (Vehicle.top_speed). A última marcha deve ser 1.0.
+@export var gear_ratios := PackedFloat32Array([0.18, 0.34, 0.52, 0.74, 1.0])
 ## Variação de velocidade (m/s) num frame de física que conta como batida.
 @export var impact_threshold := 3.0
 
-@onready var _car := get_parent() as VehicleBody3D
+@onready var _car := get_parent() as Vehicle
 
 var _engine: AudioStreamPlayer3D
 var _skid: AudioStreamPlayer3D
@@ -53,7 +52,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	var velocity := _car.linear_velocity
 	var speed := velocity.length()
-	var throttle := clampf(absf(_car.engine_force) / max_engine_force, 0.0, 1.0)
+	var throttle := absf(_car.throttle_input)
 
 	_update_engine(delta, throttle)
 	_update_tires(speed)
@@ -63,10 +62,11 @@ func _physics_process(delta: float) -> void:
 
 func _update_engine(delta: float, throttle: float) -> void:
 	var forward_speed := absf(_car.linear_velocity.dot(_car.global_basis.z))
+	var ratio := forward_speed / maxf(_car.top_speed, 1.0)
 	gear = 0
-	while gear < gear_top_speeds.size() - 1 and forward_speed > gear_top_speeds[gear]:
+	while gear < gear_ratios.size() - 1 and ratio > gear_ratios[gear]:
 		gear += 1
-	var in_gear := clampf(forward_speed / gear_top_speeds[gear], 0.0, 1.0)
+	var in_gear := clampf(ratio / gear_ratios[gear], 0.0, 1.0)
 	# Sem tração (no ar ou parado acelerando) o motor gira solto.
 	var free_rev := throttle * (0.6 if not _any_wheel_in_contact() else 0.2)
 	var target := maxf(in_gear * 0.85 + throttle * 0.15, free_rev)

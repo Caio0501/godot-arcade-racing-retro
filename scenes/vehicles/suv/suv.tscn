@@ -1,8 +1,9 @@
-[gd_scene load_steps=18 format=3 uid="uid://c36mxrwqt65xo"]
+[gd_scene load_steps=19 format=3 uid="uid://c36mxrwqt65xo"]
 
 [ext_resource type="Texture2D" uid="uid://dmqak2tdyh5fc" path="res://assets/vehicles/suv/textures/colormap.png" id="1_026gr"]
-[ext_resource type="Script" path="res://scenes/vehicles/suv/suv.gd" id="1_bqm03"]
-[ext_resource type="Script" path="res://scenes/vehicles/suv/car_audio.gd" id="4_audio"]
+[ext_resource type="Script" path="res://scenes/vehicles/vehicle.gd" id="1_bqm03"]
+[ext_resource type="Resource" path="res://scenes/vehicles/suv/suv_stats.tres" id="5_stats"]
+[ext_resource type="Script" path="res://scenes/vehicles/car_audio.gd" id="4_audio"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u3rkm"]
 resource_name = "colormap"
@@ -212,6 +213,7 @@ center_of_mass_mode = 1
 center_of_mass = Vector3(0, 0, 0.3)
 gravity_scale = 4.0
 script = ExtResource("1_bqm03")
+stats = ExtResource("5_stats")
 
 [node name="BackRight" type="VehicleWheel3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.3, -0.56)
@@ -237,7 +239,6 @@ skeleton = NodePath("")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.277281, 0.347223, 0.756066)
 use_as_steering = true
 wheel_roll_influence = 0.05
-wheel_friction_slip = 0.5
 suspension_stiffness = 150.0
 
 [node name="FrontLeftMesh" type="MeshInstance3D" parent="FrontLeft"]
@@ -248,7 +249,6 @@ skeleton = NodePath("")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.298719, 0.347223, 0.756066)
 use_as_steering = true
 wheel_roll_influence = 0.05
-wheel_friction_slip = 0.5
 suspension_stiffness = 150.0
 
 [node name="FrontRightMesh" type="MeshInstance3D" parent="FrontRight"]

@@ -8,9 +8,7 @@ const RPM_LOW := Color(0.35, 0.85, 0.4)
 const RPM_MID := Color(0.98, 0.8, 0.2)
 const RPM_HIGH := Color(0.95, 0.3, 0.25)
 
-@export var car: VehicleBody3D
-## Força máxima do motor, para converter engine_force em pedal (0 a 1).
-@export var max_engine_force := 300.0
+@export var car: Vehicle
 
 @onready var _speed: Label = %Speed
 @onready var _gear: Label = %Gear
@@ -41,7 +39,7 @@ func _process(_delta: float) -> void:
 	var ground_speed := Vector2(car.linear_velocity.x, car.linear_velocity.z).length()
 	_speed.text = str(roundi(ground_speed * 3.6))
 
-	var pedal := clampf(car.engine_force / max_engine_force, -1.0, 1.0)
+	var pedal := car.throttle_input
 	_pedal_bar.value = absf(pedal)
 	_pedal_fill.bg_color = PEDAL_GAS if pedal >= 0.0 else PEDAL_BRAKE
 	_pedal_label.text = "ACEL" if pedal >= 0.0 else "FREIO"
