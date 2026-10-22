@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://dw14f5yfaekqy"]
+[gd_scene load_steps=8 format=3 uid="uid://dw14f5yfaekqy"]
 
 [ext_resource type="Material" uid="uid://q0hrmmtucyu4" path="res://assets/prototype/grid_black_mat.tres" id="1_dj4dx"]
 [ext_resource type="PackedScene" uid="uid://c36mxrwqt65xo" path="res://scenes/vehicles/suv/suv.tscn" id="2_8jmmi"]
 [ext_resource type="PackedScene" path="res://scenes/cameras/chase_camera.tscn" id="3_chase"]
+[ext_resource type="PackedScene" path="res://scenes/ui/car_hud.tscn" id="4_hud"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0vpgm"]
 sky_top_color = Color(0.113725, 0.415686, 0.894118, 1)
@@ -37,3 +38,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.834157, 0.565021, 1.76526)
 
 [node name="ChaseCamera" parent="." node_paths=PackedStringArray("target") instance=ExtResource("3_chase")]
 target = NodePath("../suv")
+
+[node name="CarHUD" parent="." node_paths=PackedStringArray("car") instance=ExtResource("4_hud")]
+car = NodePath("../suv")

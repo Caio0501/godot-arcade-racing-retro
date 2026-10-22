@@ -28,7 +28,10 @@ var _skid: AudioStreamPlayer3D
 var _gravel: AudioStreamPlayer3D
 var _impact: AudioStreamPlayer3D
 var _wheels: Array[VehicleWheel3D] = []
-var _rpm := 0.0
+## RPM normalizado (0 = marcha lenta, 1 = limite) e marcha atual (0 = primeira).
+## Lidos também pelo HUD.
+var rpm := 0.0
+var gear := 0
 var _prev_velocity := Vector3.ZERO
 var _impact_cooldown := 0.0
 
@@ -60,18 +63,18 @@ func _physics_process(delta: float) -> void:
 
 func _update_engine(delta: float, throttle: float) -> void:
 	var forward_speed := absf(_car.linear_velocity.dot(_car.global_basis.z))
-	var gear := 0
+	gear = 0
 	while gear < gear_top_speeds.size() - 1 and forward_speed > gear_top_speeds[gear]:
 		gear += 1
 	var in_gear := clampf(forward_speed / gear_top_speeds[gear], 0.0, 1.0)
 	# Sem tração (no ar ou parado acelerando) o motor gira solto.
 	var free_rev := throttle * (0.6 if not _any_wheel_in_contact() else 0.2)
 	var target := maxf(in_gear * 0.85 + throttle * 0.15, free_rev)
-	var rate := 8.0 if target > _rpm else 4.0
-	_rpm = lerpf(_rpm, target, 1.0 - exp(-rate * delta))
+	var rate := 8.0 if target > rpm else 4.0
+	rpm = lerpf(rpm, target, 1.0 - exp(-rate * delta))
 
-	_engine.pitch_scale = lerpf(idle_pitch, max_pitch, _rpm)
-	_engine.volume_db = lerpf(-12.0, -2.0, clampf(throttle * 0.6 + _rpm * 0.4, 0.0, 1.0))
+	_engine.pitch_scale = lerpf(idle_pitch, max_pitch, rpm)
+	_engine.volume_db = lerpf(-12.0, -2.0, clampf(throttle * 0.6 + rpm * 0.4, 0.0, 1.0))
 
 
 func _update_tires(speed: float) -> void:
