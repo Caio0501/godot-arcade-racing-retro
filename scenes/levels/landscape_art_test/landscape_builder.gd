@@ -282,7 +282,7 @@ func _build_terrain() -> void:
 	mi.name = "Terrain"
 	mi.mesh = mesh
 	_generated.add_child(mi)
-	_add_static_collision("TerrainCollision", mesh)
+	_add_static_collision("TerrainCollision", mesh, "dirt")
 
 
 func _terrain_material() -> ShaderMaterial:
@@ -510,11 +510,14 @@ func _add_multimesh(node_name: String, mesh: Mesh, xforms: Array[Transform3D], c
 	_generated.add_child(mmi)
 
 
-func _add_static_collision(node_name: String, mesh: Mesh) -> void:
+## `surface` fica como metadado no corpo; o áudio do carro usa para escolher
+## entre o som de asfalto e o de terra.
+func _add_static_collision(node_name: String, mesh: Mesh, surface := "asphalt") -> void:
 	var shape := mesh.create_trimesh_shape()
 	shape.backface_collision = true
 	var body := StaticBody3D.new()
 	body.name = node_name
+	body.set_meta("surface", surface)
 	var cs := CollisionShape3D.new()
 	cs.shape = shape
 	body.add_child(cs)

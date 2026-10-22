@@ -1,8 +1,8 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://dx4wl4dp5rm87"]
 
-[ext_resource type="Script" path="res://scenes/levels/landscape_art_test/landscape_builder.gd" id="1_builder"]
-[ext_resource type="Script" path="res://scenes/cameras/rally_camera.gd" id="2_cam"]
-[ext_resource type="PackedScene" path="res://scenes/vehicles/suv/suv.tscn" id="3_suv"]
+[ext_resource type="Script" uid="uid://c4q3i5ksyo4kf" path="res://scenes/levels/landscape_art_test/landscape_builder.gd" id="1_builder"]
+[ext_resource type="Script" uid="uid://bcpl13pacgnqf" path="res://scenes/cameras/rally_camera.gd" id="2_cam"]
+[ext_resource type="PackedScene" uid="uid://c36mxrwqt65xo" path="res://scenes/vehicles/suv/suv.tscn" id="3_suv"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.36, 0.58, 0.85, 1)
@@ -45,14 +45,14 @@ dof_blur_near_distance = 20.0
 dof_blur_near_transition = 8.0
 dof_blur_amount = 0.08
 
-[node name="LandscapeArtTest" type="Node3D" node_paths=PackedStringArray("car")]
+[node name="LandscapeArtTest" type="Node3D" unique_id=1409422790 node_paths=PackedStringArray("car")]
 script = ExtResource("1_builder")
 car = NodePath("suv")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=517838099]
 environment = SubResource("Environment_main")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1439226541]
 transform = Transform3D(0.819152, -0.368688, 0.439385, 0, 0.766044, 0.642788, -0.573576, -0.526541, 0.627507, 0, 30, 0)
 light_color = Color(1, 0.94, 0.84, 1)
 light_energy = 1.3
@@ -60,10 +60,10 @@ shadow_enabled = true
 shadow_blur = 1.5
 directional_shadow_max_distance = 160.0
 
-[node name="suv" parent="." instance=ExtResource("3_suv")]
+[node name="suv" parent="." unique_id=307402671 instance=ExtResource("3_suv")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -130)
 
-[node name="RallyCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+[node name="RallyCamera" type="Camera3D" parent="." unique_id=1791546119 node_paths=PackedStringArray("target")]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 22, -152)
 attributes = SubResource("CameraAttributes_dof")
 fov = 45.0
