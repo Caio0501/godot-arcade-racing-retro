@@ -66,7 +66,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -130)
 [node name="RallyCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 22, -152)
 attributes = SubResource("CameraAttributes_dof")
-current = true
 fov = 45.0
 near = 0.3
 far = 800.0

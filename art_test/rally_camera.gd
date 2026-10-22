@@ -1,7 +1,8 @@
 extends Camera3D
 ## Câmera alta e inclinada, no estilo art of rally: segue o carro de longe,
 ## gira devagar na direção do movimento e ajusta o foco (DOF tilt-shift)
-## pela distância até o carro. Tecla C alterna com a câmera do próprio carro.
+## pela distância até o carro. A ação "toggle_camera" (tecla C) alterna com a
+## câmera do próprio carro.
 
 @export var target: Node3D
 @export var distance := 24.0
@@ -11,6 +12,8 @@ extends Camera3D
 @export var focus_band := 10.0
 ## Distância à frente do carro para onde a câmera olha.
 @export var look_ahead := 6.0
+## Começa na câmera do SUV (com o efeito pixelizado) em vez desta.
+@export var start_with_car_camera := true
 
 var _yaw := 0.0
 var _car_camera: Camera3D
@@ -27,7 +30,10 @@ func _ready() -> void:
 	_yaw = _heading_from_basis()
 	global_position = _desired_position()
 	look_at(target.global_position, Vector3.UP)
-	make_current()
+	if start_with_car_camera and _car_camera:
+		_car_camera.make_current()
+	else:
+		make_current()
 	_sync_pixel_quad()
 
 
@@ -51,8 +57,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var key := event as InputEventKey
-	if key and key.pressed and not key.echo and key.keycode == KEY_C and _car_camera:
+	if event.is_action_pressed("toggle_camera") and _car_camera:
 		if current:
 			_car_camera.make_current()
 		else:
