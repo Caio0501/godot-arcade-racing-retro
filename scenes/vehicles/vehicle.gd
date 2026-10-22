@@ -37,6 +37,12 @@ const SUSPENSION_FORCE_HEADROOM := 3.0
 ## do projeto; o motor compensa esse arrasto enquanto acelera, então o tempo até
 ## a velocidade máxima continua sendo o definido pelo peso.
 const COAST_DRAG := 0.15
+## Freio de mão: força de frenagem das rodas traseiras por kg de massa (a doc
+## da Godot sugere ~25-30 de brake para frear forte um carro de 1000 kg) e
+## fração da aderência traseira que sobra com ele puxado, para a traseira
+## escorregar e o carro girar nas curvas fechadas.
+const HANDBRAKE_FORCE_PER_KG := 0.03
+const HANDBRAKE_REAR_GRIP := 0.45
 ## Força de ré como fração da força do motor, e velocidade máxima de ré.
 const REVERSE_FORCE := 0.6
 const REVERSE_TOP_SPEED_KMH := 30.0
@@ -58,8 +64,11 @@ var max_engine_force := 0.0
 var top_speed := 0.0  # m/s
 var throttle_input := 0.0
 var steer_input := 0.0
+var handbrake_input := false
 
 var _traction_wheels := 1
+var _rear_wheels: Array[VehicleWheel3D] = []
+var _rear_grip := 1.0
 var _max_steer := 0.5
 var _steer_speed := 2.5
 
@@ -91,15 +100,20 @@ func apply_stats() -> void:
 	var wheels := get_children().filter(func(c): return c is VehicleWheel3D)
 	var load_per_wheel := mass * float(ProjectSettings.get_setting("physics/3d/default_gravity")) * gravity_scale / maxf(wheels.size(), 1)
 	_traction_wheels = maxi(wheels.filter(func(wh): return wh.use_as_traction).size(), 1)
+	_rear_grip = rear_grip
+	_rear_wheels.clear()
 	for wheel: VehicleWheel3D in wheels:
 		wheel.wheel_friction_slip = front_grip if wheel.use_as_steering else rear_grip
 		wheel.suspension_max_force = load_per_wheel * SUSPENSION_FORCE_HEADROOM
+		if not wheel.use_as_steering:
+			_rear_wheels.append(wheel)
 
 
 func _physics_process(delta: float) -> void:
 	if player_controlled:
 		throttle_input = Input.get_axis("brake", "accelerate")
 		steer_input = Input.get_axis("steer_right", "steer_left")
+		handbrake_input = Input.is_action_pressed("handbrake")
 
 	var forward_speed := linear_velocity.dot(global_basis.z)
 	var speed_ratio := clampf(absf(forward_speed) / top_speed, 0.0, 1.0)
@@ -116,8 +130,14 @@ func _physics_process(delta: float) -> void:
 		force = throttle_input * max_engine_force * REVERSE_FORCE
 		if forward_speed <= 0.0:
 			force *= _limiter(-forward_speed, REVERSE_TOP_SPEED_KMH / 3.6)
+	if handbrake_input:
+		force = 0.0  # embreagem pisada enquanto o freio de mão está puxado
 	# A Godot aplica engine_force em cada roda de tração.
 	engine_force = force / _traction_wheels
+
+	for wheel in _rear_wheels:
+		wheel.brake = mass * HANDBRAKE_FORCE_PER_KG if handbrake_input else 0.0
+		wheel.wheel_friction_slip = _rear_grip * (HANDBRAKE_REAR_GRIP if handbrake_input else 1.0)
 
 
 ## Corta o motor suavemente nos últimos 4% antes do limite de velocidade.
