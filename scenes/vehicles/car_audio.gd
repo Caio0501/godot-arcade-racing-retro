@@ -1,7 +1,8 @@
 extends Node3D
 ## Sons do carro. Precisa ser filho de um Vehicle (vehicle.gd).
 ## - Motor: loop com pitch pelo RPM de um câmbio simulado.
-## - Pneus: chiado quando as rodas perdem aderência no asfalto.
+## - Pneus: chiado só quando o carro perde aderência no asfalto (saindo de
+##   frente além do limite, saindo de traseira ou rodando).
 ## - Terra: ronco de cascalho rodando em superfície com meta "surface" = "dirt".
 ## - Batidas: tocadas quando a velocidade muda bruscamente.
 ## Os WAVs são gerados por tools/generate_car_sfx.py.
@@ -17,6 +18,14 @@ const SILENT_DB := -60.0
 ## Limite de cada marcha do câmbio simulado, como fração da velocidade máxima
 ## do veículo (Vehicle.top_speed). A última marcha deve ser 1.0.
 @export var gear_ratios := PackedFloat32Array([0.18, 0.34, 0.52, 0.74, 1.0])
+## Pneu "além do limite": skidinfo da Godot (1 = aderindo, 0 = deslizando)
+## abaixo do qual o chiado começa, e onde chega ao volume máximo.
+@export var skid_grip_start := 0.3
+@export var skid_grip_full := 0.05
+## Ângulo (graus) entre a frente do carro e a direção em que ele anda a partir
+## do qual a traseira está escapando, e onde o chiado chega ao máximo.
+@export var skid_angle_start := 6.0
+@export var skid_angle_full := 20.0
 ## Variação de velocidade (m/s) num frame de física que conta como batida.
 @export var impact_threshold := 3.0
 
@@ -33,6 +42,7 @@ var rpm := 0.0
 var gear := 0
 var _prev_velocity := Vector3.ZERO
 var _impact_cooldown := 0.0
+var _skid_amount := 0.0
 
 
 func _ready() -> void:
@@ -55,7 +65,7 @@ func _physics_process(delta: float) -> void:
 	var throttle := absf(_car.throttle_input)
 
 	_update_engine(delta, throttle)
-	_update_tires(speed)
+	_update_tires(delta, speed)
 	_update_impacts(delta, velocity)
 	_prev_velocity = velocity
 
@@ -77,8 +87,8 @@ func _update_engine(delta: float, throttle: float) -> void:
 	_engine.volume_db = lerpf(-12.0, -2.0, clampf(throttle * 0.6 + rpm * 0.4, 0.0, 1.0))
 
 
-func _update_tires(speed: float) -> void:
-	var slip := 0.0
+func _update_tires(delta: float, speed: float) -> void:
+	var grip_loss := 0.0
 	var on_dirt := 0
 	var in_contact := 0
 	for wheel in _wheels:
@@ -89,17 +99,27 @@ func _update_tires(speed: float) -> void:
 		if body and body.get_meta("surface", "asphalt") == "dirt":
 			on_dirt += 1
 		else:
-			slip = maxf(slip, 1.0 - wheel.get_skidinfo())
+			# Pneu chegando no limite em curva normal não chia; só bem além dele.
+			var skid := wheel.get_skidinfo()
+			grip_loss = maxf(grip_loss, inverse_lerp(skid_grip_start, skid_grip_full, skid))
 
-	# Derrapagem lateral também chia, mesmo com as rodas "agarrando".
-	var lateral := absf(_car.linear_velocity.dot(_car.global_basis.x))
-	slip = maxf(slip, clampf((lateral - 2.0) / 6.0, 0.0, 1.0))
-	if speed < 2.0:
-		slip = 0.0
+	# Traseira escapando / rodada: o carro anda numa direção e aponta para outra.
+	var flat_velocity := Vector2(_car.linear_velocity.x, _car.linear_velocity.z)
+	if speed > 3.0:
+		var forward := Vector2(_car.global_basis.z.x, _car.global_basis.z.z)
+		var drift_angle := rad_to_deg(absf(forward.angle_to(flat_velocity)))
+		drift_angle = minf(drift_angle, 180.0 - drift_angle)  # andando de ré também vale
+		grip_loss = maxf(grip_loss, inverse_lerp(skid_angle_start, skid_angle_full, drift_angle))
+	grip_loss = clampf(grip_loss, 0.0, 1.0)
+	if speed < 2.0 or in_contact == 0:
+		grip_loss = 0.0
 	var dirt_ratio := float(on_dirt) / maxf(in_contact, 1)
 
-	_skid.volume_db = _amount_to_db(slip * (1.0 - dirt_ratio), -4.0)
-	_skid.pitch_scale = 0.9 + slip * 0.2
+	# Sobe rápido e desce um pouco mais devagar, para o som não piscar.
+	var rate := 20.0 if grip_loss > _skid_amount else 8.0
+	_skid_amount = lerpf(_skid_amount, grip_loss, 1.0 - exp(-rate * delta))
+	_skid.volume_db = _amount_to_db(_skid_amount * (1.0 - dirt_ratio), -4.0)
+	_skid.pitch_scale = 0.9 + _skid_amount * 0.2
 	_gravel.volume_db = _amount_to_db(dirt_ratio * clampf(speed / 20.0, 0.0, 1.0), -3.0)
 	_gravel.pitch_scale = 0.8 + clampf(speed / 40.0, 0.0, 0.6)
 
