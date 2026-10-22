@@ -2,9 +2,11 @@ extends Camera3D
 ## Câmera alta e inclinada, no estilo art of rally: segue o carro de longe,
 ## gira devagar na direção do movimento e ajusta o foco (DOF tilt-shift)
 ## pela distância até o carro. A ação "toggle_camera" (tecla C) alterna com a
-## câmera do próprio carro.
+## câmera de perseguição pixelizada (`chase_camera`).
 
 @export var target: Node3D
+## Câmera pixelizada (scenes/cameras/chase_camera.tscn) para alternar.
+@export var chase_camera: Node3D
 @export var distance := 24.0
 @export var height := 18.0
 @export var follow_speed := 3.0
@@ -12,7 +14,7 @@ extends Camera3D
 @export var focus_band := 10.0
 ## Distância à frente do carro para onde a câmera olha.
 @export var look_ahead := 6.0
-## Começa na câmera do SUV (com o efeito pixelizado) em vez desta.
+## Começa na câmera pixelizada em vez desta.
 @export var start_with_car_camera := true
 
 var _yaw := 0.0
@@ -23,10 +25,11 @@ var _pixel_quad: Node3D
 func _ready() -> void:
 	if not target:
 		return
-	_car_camera = target.get_node_or_null("CameraPivot/Camera")
-	# O quad de pixelização da câmera do carro aparece flutuando no mundo
-	# quando outra câmera está ativa; escondemos enquanto esta câmera é a atual.
-	_pixel_quad = target.get_node_or_null("CameraPivot/Camera/MeshInstance3D")
+	if chase_camera:
+		_car_camera = chase_camera.get_node_or_null("Camera")
+		# O quad de pixelização aparece flutuando no mundo quando outra câmera
+		# está ativa; escondemos enquanto esta câmera é a atual.
+		_pixel_quad = chase_camera.get_node_or_null("Camera/PixelFilter")
 	_yaw = _heading_from_basis()
 	global_position = _desired_position()
 	look_at(target.global_position, Vector3.UP)

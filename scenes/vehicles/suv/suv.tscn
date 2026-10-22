@@ -1,8 +1,7 @@
-[gd_scene load_steps=21 format=3 uid="uid://c36mxrwqt65xo"]
+[gd_scene load_steps=18 format=3 uid="uid://c36mxrwqt65xo"]
 
 [ext_resource type="Texture2D" uid="uid://dmqak2tdyh5fc" path="res://assets/vehicles/suv/textures/colormap.png" id="1_026gr"]
 [ext_resource type="Script" path="res://scenes/vehicles/suv/suv.gd" id="1_bqm03"]
-[ext_resource type="Shader" path="res://shaders/pixel_filter.gdshader" id="3_eqivm"]
 [ext_resource type="Script" path="res://scenes/vehicles/suv/car_audio.gd" id="4_audio"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u3rkm"]
@@ -207,14 +206,6 @@ shadow_mesh = SubResource("ArrayMesh_gifhh")
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_v3p2y"]
 points = PackedVector3Array(-0.633512, 0.1, -0.966618, 0.686842, 0.222714, 1.24852, -0.567778, 0.627302, 1.2891, -0.45481, 1.07595, -0.908335, 0.686842, 0.222714, -1.09852, -0.391343, 0, 1.05061, 0.449478, 1.07238, 0.300231, 0.45438, 1.0781, -0.912331, 0.160545, -0.020238, -1.22024, 0.65, 0.0101073, 0.457787, -0.770107, 0.465555, 0.560588, -0.451752, 1.07238, 0.300231, 0.565354, 0.627302, 1.2891, 0.160545, 0.020254, 1.37024, -0.633512, 0.1, 1.11662, -0.545185, 0.624077, -1.12964, -0.770107, 0.708286, 0.39881, 0.767833, 0.708286, 0.398556, 0.545117, 0.624413, -1.13485, -0.65, 0.0119802, 0.456689, -0.689116, 0.222714, -1.05821, -0.16297, -0.020238, -1.22024, -0.64877, 0.222714, 1.2891, 0.631382, 0.1, -1.00392, 0.767833, 0.465555, 0.560588, 0.388924, 0, 1.05061, -0.16297, 0.020254, 1.37024, -0.689116, 0.506158, -0.693826, 0.686842, 0.505937, -0.693826, -0.608124, 0.222714, -1.17967, 0.631382, 0.1, 1.15392, -0.634083, 0.0250906, -0.26)
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_gefi7"]
-render_priority = 4
-shader = ExtResource("3_eqivm")
-
-[sub_resource type="QuadMesh" id="QuadMesh_m2rqd"]
-material = SubResource("ShaderMaterial_gefi7")
-size = Vector2(10, 10)
-
 [node name="suv" type="VehicleBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0340605, 0.0334501, -0.0621657)
 center_of_mass_mode = 1
@@ -277,17 +268,6 @@ skeleton = NodePath("")
 [node name="CollisionShape" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -2.88765e-15)
 shape = SubResource("ConvexPolygonShape3D_v3p2y")
-
-[node name="CameraPivot" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.28383, -4.27698)
-top_level = true
-
-[node name="Camera" type="Camera3D" parent="CameraPivot"]
-transform = Transform3D(-1, 0, -8.74227e-08, 0, 1, 0, 8.74227e-08, 0, -1, -0.0180764, 1.35511, -3.94067)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CameraPivot/Camera"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.30385e-07, 0, -1.40161)
-mesh = SubResource("QuadMesh_m2rqd")
 
 [node name="CarAudio" type="Node3D" parent="."]
 script = ExtResource("4_audio")

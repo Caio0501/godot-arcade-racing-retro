@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/cameras/chase_camera.gd" id="1_chase"]
+[ext_resource type="Shader" path="res://shaders/pixel_filter.gdshader" id="2_pixel"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pixel"]
+render_priority = 4
+shader = ExtResource("2_pixel")
+
+[sub_resource type="QuadMesh" id="QuadMesh_pixel"]
+material = SubResource("ShaderMaterial_pixel")
+size = Vector2(10, 10)
+
+[node name="ChaseCamera" type="Node3D"]
+script = ExtResource("1_chase")
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(-1, 0, -8.74227e-08, 0, 1, 0, 8.74227e-08, 0, -1, -0.0180764, 1.35511, -3.94067)
+
+[node name="PixelFilter" type="MeshInstance3D" parent="Camera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.30385e-07, 0, -1.40161)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_pixel")

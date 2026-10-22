@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://c4q3i5ksyo4kf" path="res://scenes/levels/landscape_art_test/landscape_builder.gd" id="1_builder"]
 [ext_resource type="Script" uid="uid://bcpl13pacgnqf" path="res://scenes/cameras/rally_camera.gd" id="2_cam"]
 [ext_resource type="PackedScene" uid="uid://c36mxrwqt65xo" path="res://scenes/vehicles/suv/suv.tscn" id="3_suv"]
+[ext_resource type="PackedScene" path="res://scenes/cameras/chase_camera.tscn" id="4_chase"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.36, 0.58, 0.85, 1)
@@ -63,7 +64,10 @@ directional_shadow_max_distance = 160.0
 [node name="suv" parent="." unique_id=307402671 instance=ExtResource("3_suv")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -130)
 
-[node name="RallyCamera" type="Camera3D" parent="." unique_id=1791546119 node_paths=PackedStringArray("target")]
+[node name="ChaseCamera" parent="." node_paths=PackedStringArray("target") instance=ExtResource("4_chase")]
+target = NodePath("../suv")
+
+[node name="RallyCamera" type="Camera3D" parent="." unique_id=1791546119 node_paths=PackedStringArray("target", "chase_camera")]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 22, -152)
 attributes = SubResource("CameraAttributes_dof")
 fov = 45.0
@@ -71,3 +75,4 @@ near = 0.3
 far = 800.0
 script = ExtResource("2_cam")
 target = NodePath("../suv")
+chase_camera = NodePath("../ChaseCamera")
